@@ -1,0 +1,16 @@
+.date-range-picker {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    justify-content: flex-start; /* Left-aligned */
+  }
+  
+  .date-range-picker label {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+  }
+  
