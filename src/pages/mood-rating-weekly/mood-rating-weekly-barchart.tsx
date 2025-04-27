@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart, CategoryScale, BarElement, LinearScale, Tooltip, Legend, Title } from 'chart.js';
 import './mood-rating-weekly.css';
@@ -22,10 +22,38 @@ const WeeklyMoodBarChart: React.FC<WeeklyMoodBarChartProps> = ({ fromDate, toDat
     return ColorPalette[moodId];
   };
 
-  const labels = moodData.map(
-    (entry) => `${entry.startDayOfWeek} - ${entry.lastDayOfWeek}`
-  );
-
+  const [labels, setLabels] = useState<string[]>([]);
+  const getWeeklyLabels = (): string[] => {
+    const labels: string[] = [];
+    const start = new Date(fromDate);
+    const end = new Date(toDate);
+  
+    let current = new Date(start);
+  
+    while (current <= end) {
+      const startOfWeek = new Date(current);
+      const endOfWeek = new Date(current);
+      endOfWeek.setDate(endOfWeek.getDate() + 6);
+  
+      // Clamp endOfWeek if it exceeds the final toDate
+      if (endOfWeek > end) {
+        endOfWeek.setTime(end.getTime());
+      }
+  
+      const formatDate = (date: Date) => date.toISOString().split('T')[0]; // yyyy-mm-dd
+  
+      labels.push(`${formatDate(startOfWeek)} - ${formatDate(endOfWeek)}`);
+  
+      // Move to next week
+      current.setDate(current.getDate() + 7);
+    }
+  
+    return labels;
+  };
+  useEffect(() => {
+    setLabels(getWeeklyLabels());
+  }, [])
+  
   // Create a dataset per mood
   const datasets = moods.map((mood, i) => {
     const data = labels.map((label) => {

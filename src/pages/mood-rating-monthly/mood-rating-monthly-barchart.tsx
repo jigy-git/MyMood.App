@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart, CategoryScale, BarElement, LinearScale, Tooltip, Legend, Title } from 'chart.js';
 import './mood-rating-monthly.css';
@@ -17,20 +17,45 @@ type MonthlyMoodBarChartProps = {
 };
 
 const MonthlyMoodBarChart: React.FC<MonthlyMoodBarChartProps> = ({ fromDate, toDate, moods, moodData }) => {
-  // Color map from moodId
+
   const getColor = (moodId: number) => {
     return ColorPalette[moodId];
   };
 
-  const labels = moodData.map(
-    (entry) => `${entry.month}/${entry.year}`
-  );
+  const [labels, setLabels] = useState<string[]>([]); 
+  const getMonthLabels = (): string[] => {
+    const labels: string[] = [];
+    const from = new Date(fromDate);
+    const to = new Date(toDate);
+  
+    // Set day to 1 to avoid edge cases
+    from.setDate(1);
+    to.setDate(1);
+  
+    const current = new Date(from);
+  
+    while (current.getFullYear() < to.getFullYear() ||
+    (current.getFullYear() == to.getFullYear() && current.getMonth() <= to.getMonth())) {
+      const month = current.getMonth() + 1; // getMonth is 0-based
+      const year = current.getFullYear();
+      labels.push(`${month}/${year}`);
+  
+      // Move to the next month
+      current.setMonth(current.getMonth() + 1);
+    }
+  
+    return labels;
+  };
+  
+  useEffect(() => {
+    setLabels(getMonthLabels());
+  }, [])
 
   // Create a dataset per mood
   const datasets = moods.map((mood, i) => {
     const data = labels.map((label) => {
       const entry = moodData.find(
-        (e: MonthlyMoodRating) => `${e.month}/${e.year}` === label && e.moodId === mood.id
+        (e: MonthlyMoodRating) => `${e.month}/${e.year}` == label && e.moodId == mood.id
       );
       return entry ? mood.id : 0;
     });
